@@ -1,4 +1,4 @@
-package org.example.repositories.impl;
+package org.example.repositories.in_memory;
 
 import org.example.models.Matricula;
 import org.example.repositories.interfaces.MatriculaRepository;
