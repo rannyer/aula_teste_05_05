@@ -19,7 +19,7 @@ public class MatriculaService {
     public Matricula matricular(Long alunoId, Long cursoId){
         Aluno aluno = alunoRepository
                 .buscarPorId(alunoId)
-                .orElseThrow(() -> new RuntimeException("Aluno encontrado"));
+                .orElseThrow(() -> new RuntimeException("Aluno nao encontrado"));
 
         Curso curso =  cursoRepository
                 .buscarPorId(cursoId)

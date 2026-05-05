@@ -11,11 +11,11 @@ import org.example.repositories.interfaces.MatriculaRepository;
 import org.example.services.MatriculaService;
 import org.example.services.NotificacaoService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 public class MatriculaServiceIntegrationTest {
     private AlunoRepositoryEmMemoria alunoRepository;
@@ -60,6 +60,53 @@ public class MatriculaServiceIntegrationTest {
 
         verify(notificacaoService).enviarConfirmacao(aluno, curso);
 
+    }
+
+    @Test
+    void naoDeveMatricularAlunoQuandoCursoNaoTemVaga(){
+        Aluno aluno =  new Aluno(1L, "Joao Java", "jojo@oracle.com");
+        Curso curso =  new Curso(10L, "Java com Testes", 0);
+        alunoRepository.salvar(aluno);
+        cursoRepository.salvar(curso);
+
+        RuntimeException exception =  assertThrows(RuntimeException.class, () -> matriculaService.matricular(1L,10L));
+
+        assertEquals("Curso sem vagas", exception.getMessage());
+        assertEquals(0, matriculaRepository.listarTodas().size());
+
+        verify(notificacaoService, never()).enviarConfirmacao(aluno, curso);
+    }
+
+    @Nested
+    class aluno_curso_inexistente{
+        @Test
+        void naoDeveMatricularQuandoAlunoNaoExiste(){
+            Curso curso =  new Curso(10L, "Java com Testes", 0);
+            cursoRepository.salvar(curso);
+
+            RuntimeException exception =  assertThrows(RuntimeException.class, () ->
+                    matriculaService.matricular(99L,10L));
+
+            assertEquals("Aluno nao encontrado", exception.getMessage());
+            assertEquals(0, matriculaRepository.listarTodas().size());
+
+            verify(notificacaoService, never()).enviarConfirmacao(any(), any());
+        }
+
+        @Test
+        void naoDeveMatricularQuandoCursoNaoExiste(){
+            Aluno aluno =  new Aluno(1L, "Joao Java", "jojo@oracle.com");
+
+            alunoRepository.salvar(aluno);
+
+            RuntimeException exception =  assertThrows(RuntimeException.class, () ->
+                    matriculaService.matricular(1L,99L));
+
+            assertEquals("Curso nao encontrado", exception.getMessage());
+            assertEquals(0, matriculaRepository.listarTodas().size());
+
+            verify(notificacaoService, never()).enviarConfirmacao(any(), any());
+        }
     }
 
 }
