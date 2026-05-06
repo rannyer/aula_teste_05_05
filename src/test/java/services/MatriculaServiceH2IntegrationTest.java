@@ -3,9 +3,13 @@ package services;
 import org.example.models.Aluno;
 import org.example.models.Curso;
 import org.example.models.Matricula;
-import org.example.repositories.in_memory.AlunoRepositoryEmMemoria;
-import org.example.repositories.in_memory.CursoRepositoryEmMemoria;
-import org.example.repositories.in_memory.MatriculaRepositoryEmMemoria;
+import org.example.repositories.db_connection.BancoTesteHelper;
+import org.example.repositories.h2.AlunoRepositoryH2;
+import org.example.repositories.h2.CursoRepositoryH2;
+import org.example.repositories.h2.MatriculaRepositoryH2;
+import org.example.repositories.interfaces.AlunoRepository;
+import org.example.repositories.interfaces.CursoRepository;
+import org.example.repositories.interfaces.MatriculaRepository;
 import org.example.services.MatriculaService;
 import org.example.services.NotificacaoService;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,12 +17,15 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class MatriculaServiceIntegrationTest {
-    private AlunoRepositoryEmMemoria alunoRepository;
-    private CursoRepositoryEmMemoria cursoRepository;
-    private MatriculaRepositoryEmMemoria matriculaRepository;
+public class MatriculaServiceH2IntegrationTest {
+    private AlunoRepository alunoRepository;
+    private CursoRepository cursoRepository;
+    private MatriculaRepository matriculaRepository;
 
     private NotificacaoService notificacaoService;
 
@@ -26,9 +33,11 @@ public class MatriculaServiceIntegrationTest {
 
     @BeforeEach
     void setup(){
-        alunoRepository = new AlunoRepositoryEmMemoria();
-        cursoRepository =  new CursoRepositoryEmMemoria();
-        matriculaRepository = new MatriculaRepositoryEmMemoria();
+        BancoTesteHelper.criarTabelas();
+        BancoTesteHelper.limparTabelas();
+        alunoRepository = new AlunoRepositoryH2();
+        cursoRepository =  new CursoRepositoryH2();
+        matriculaRepository = new MatriculaRepositoryH2();
 
         notificacaoService = mock(NotificacaoService.class);
 
@@ -39,7 +48,6 @@ public class MatriculaServiceIntegrationTest {
                 notificacaoService
         );
     }
-
     @Test
     void deveMatricularAlunoEmCursoComVaga(){
         Aluno aluno =  new Aluno(1L, "Joao Java", "jojo@oracle.com");
@@ -53,8 +61,7 @@ public class MatriculaServiceIntegrationTest {
         assertNotNull(matricula.getId());
         assertEquals("Joao Java", matricula.getAluno().getNome());
         assertEquals("Java com Testes", matricula.getCurso().getNome());
-        Curso cursoAtualizado = cursoRepository.buscarPorId(10L).orElseThrow();
-        assertEquals(2, cursoAtualizado.getVagasDisponiveis());
+        assertEquals(2, curso.getVagasDisponiveis());
         assertEquals(1, matriculaRepository.listarTodas().size());
 
         verify(notificacaoService).enviarConfirmacao(aluno, curso);
