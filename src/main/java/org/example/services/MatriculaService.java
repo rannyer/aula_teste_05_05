@@ -23,7 +23,7 @@ public class MatriculaService {
 
         Curso curso =  cursoRepository
                 .buscarPorId(cursoId)
-                .orElseThrow(() -> new RuntimeException("Curso nao encontrados"));
+                .orElseThrow(() -> new RuntimeException("Curso nao encontrado"));
 
         curso.ocuparVagas();
 
