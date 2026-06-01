@@ -1,24 +1,54 @@
-name: Test - CI
+name: Java CI
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
-    branches: [main]
-
+    branches: [ main ]
 
 jobs:
   tests:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Baixar codigo do repo
+      - name: Baixar Codigo
         uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Configurar Java
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
           distribution: 'temurin'
-      - name: Rodar testes
-        run: mvn test
+          java-version: '21'
+
+      - name: Cache do Maven
+        uses: actions/cache@v4
+        with:
+          # use runner.home to avoid shell-specific tilde issues and cache the local repo
+          path: ${{ runner.home }}/.m2/repository
+          key: maven-${{ runner.os }}-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            maven-${{ runner.os }}-
+
+      - name: Build e rodar testes (unit + integration)
+        run: mvn -B -V clean verify
+
+      - name: Análise estática - Checkstyle (relatório)
+        run: mvn org.apache.maven.plugins:maven-checkstyle-plugin:3.2.2:check || true
+
+      - name: Análise estática - SpotBugs (relatório)
+        run: mvn com.github.spotbugs:spotbugs-maven-plugin:4.7.3:check || true
+
+      - name: Varredura de dependências (OWASP Dependency-Check)
+        run: mvn org.owasp:dependency-check-maven:check || true
+
+      - name: Upload de relatórios de teste
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports
+
+      - name: Upload do relatório do Dependency-Check
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: target/dependency-check-report.html
