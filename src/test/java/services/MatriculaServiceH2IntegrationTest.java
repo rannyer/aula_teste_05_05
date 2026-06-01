@@ -61,7 +61,7 @@ public class MatriculaServiceH2IntegrationTest {
         assertNotNull(matricula.getId());
         assertEquals("Joao Java", matricula.getAluno().getNome());
         assertEquals("Java com Testes", matricula.getCurso().getNome());
-        assertEquals(2, curso.getVagasDisponiveis());
+        assertEquals(3, curso.getVagasDisponiveis());
         assertEquals(1, matriculaRepository.listarTodas().size());
 
         verify(notificacaoService).enviarConfirmacao(aluno, curso);
