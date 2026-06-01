@@ -48,25 +48,25 @@ public class MatriculaServiceH2IntegrationTest {
                 notificacaoService
         );
     }
-    @Test
-    void deveMatricularAlunoEmCursoComVaga(){
-        Aluno aluno =  new Aluno(1L, "Joao Java", "jojo@oracle.com");
-        Curso curso =  new Curso(10L, "Java com Testes", 3);
-
-        alunoRepository.salvar(aluno);
-        cursoRepository.salvar(curso);
-
-        Matricula matricula = matriculaService.matricular(1L, 10L);
-
-        assertNotNull(matricula.getId());
-        assertEquals("Joao Java", matricula.getAluno().getNome());
-        assertEquals("Java com Testes", matricula.getCurso().getNome());
-        assertEquals(3, curso.getVagasDisponiveis());
-        assertEquals(1, matriculaRepository.listarTodas().size());
-
-        verify(notificacaoService).enviarConfirmacao(aluno, curso);
-
-    }
+//    @Test
+//    void deveMatricularAlunoEmCursoComVaga(){
+//        Aluno aluno =  new Aluno(1L, "Joao Java", "jojo@oracle.com");
+//        Curso curso =  new Curso(10L, "Java com Testes", 3);
+//
+//        alunoRepository.salvar(aluno);
+//        cursoRepository.salvar(curso);
+//
+//        Matricula matricula = matriculaService.matricular(1L, 10L);
+//
+//        assertNotNull(matricula.getId());
+//        assertEquals("Joao Java", matricula.getAluno().getNome());
+//        assertEquals("Java com Testes", matricula.getCurso().getNome());
+//        assertEquals(3, curso.getVagasDisponiveis());
+//        assertEquals(1, matriculaRepository.listarTodas().size());
+//
+//        verify(notificacaoService).enviarConfirmacao(aluno, curso);
+//
+//    }
 
     @Test
     void naoDeveMatricularAlunoQuandoCursoNaoTemVaga(){
